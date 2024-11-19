@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Chat with IA</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        .form-group input, .form-group textarea {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        .form-group button {
+            padding: 10px 15px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        .form-group button:hover {
+            background-color: #0056b3;
+        }
+        .response {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Chat with IA</h1>
+        <form id="chat-form">
+            <div class="form-group">
+                <label for="query">Enter your query:</label>
+                <textarea id="query" name="query" rows="4" required></textarea>
+            </div>
+            <div class="form-group">
+                <button type="submit">Send</button>
+            </div>
+        </form>
+        <div id="chat-response" class="response" style="display: none;"></div>
+
+        <h2>Upload File to RAG</h2>
+        <form id="file-upload-form" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="file">Choose file:</label>
+                <input type="file" id="file" name="file" required>
+            </div>
+            <div class="form-group">
+                <button type="submit">Upload</button>
+            </div>
+        </form>
+        <div id="file-upload-status" class="response" style="display: none;"></div>
+    </div>
+
+    <script>
+        document.getElementById('chat-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const query = document.getElementById('query').value;
+            fetch('/chat/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: new URLSearchParams({
+                    'query': query
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                const chatResponse = document.getElementById('chat-response');
+                chatResponse.style.display = 'block';
+                chatResponse.textContent = data.response;
+            });
+        });
+
+        document.getElementById('file-upload-form').addEventListener('submit', function(event) {
+            event.preventDefault();
+            const formData = new FormData();
+            formData.append('file', document.getElementById('file').files[0]);
+            fetch('/add_file/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                const fileUploadStatus = document.getElementById('file-upload-status');
+                fileUploadStatus.style.display = 'block';
+                fileUploadStatus.textContent = data.status;
+            });
+        });
+    </script>
+</body>
+</html>
