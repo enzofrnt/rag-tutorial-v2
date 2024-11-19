@@ -1,13 +1,12 @@
 pypdf
 langchain
-chromadb # Vector storage
+chromadb
 pytest
 boto3
-
 langchain-chroma
 langchain-ollama
 django
 chroma
 ollama
-
 django-browser-reload==1.15.0
+langchain_community
