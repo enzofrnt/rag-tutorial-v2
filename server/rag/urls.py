@@ -1,7 +1,10 @@
 from django.urls import path
+from django.views.generic import RedirectView
+
 from . import views
 
 urlpatterns = [
-    path('chat/', views.chat, name='chat'),
-    path('add_file/', views.add_file, name='add_file'),
+    path("", RedirectView.as_view(url="chat/", permanent=True)),
+    path("chat/", views.chat, name="chat"),
+    path("add_file/", views.add_file, name="add_file"),
 ]
