@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
+import os
 from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -131,4 +132,4 @@ EMBEDDING_MODEL_NAME = "nomic-embed-text"
 
 CHROMA_PATH = str(BASE_DIR / "chroma_db")
 
-DATA_PATH = str(BASE_DIR / "data")
+DATA_PATH = os.path.join(BASE_DIR, "data")
