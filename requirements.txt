@@ -6,3 +6,4 @@ boto3
 
 langchain-chroma
 langchain-ollama
+django
