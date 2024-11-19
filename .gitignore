@@ -2,3 +2,5 @@
 .DS_Store
 backup
 chroma
+env/
+__pycache__/
