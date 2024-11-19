@@ -9,3 +9,5 @@ langchain-ollama
 django
 chroma
 ollama
+
+django-browser-reload==1.15.0

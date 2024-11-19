@@ -4,3 +4,6 @@ backup
 chroma
 env/
 __pycache__/
+chroma_db/
+data/
+db.sqlite3
