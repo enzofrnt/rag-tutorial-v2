@@ -8,7 +8,7 @@ from django.utils.text import slugify
 from django.views.decorators.csrf import csrf_exempt
 
 from .populate_database import add_to_chroma, load_documents, split_documents
-from .query_data import async_query_rag, query_rag
+from .query_data import query_rag
 
 
 @csrf_exempt
