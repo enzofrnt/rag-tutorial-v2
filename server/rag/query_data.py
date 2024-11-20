@@ -2,6 +2,7 @@ import argparse
 import subprocess
 
 from django.conf import settings
+from langchain.callbacks.manager import CallbackManagerForLLMRun
 from langchain.prompts import ChatPromptTemplate
 from langchain_chroma import Chroma
 from langchain_ollama import OllamaLLM
@@ -39,8 +40,12 @@ def query_rag(query_text: str):
         persist_directory=settings.CHROMA_PATH, embedding_function=embedding_function
     )
 
+    total_elements = len(db.get()["documents"])
+
+    k = min(5, total_elements)
+
     # Search the DB.
-    results = db.similarity_search_with_score(query_text, k=5)
+    results = db.similarity_search_with_score(query_text, k=k)
 
     context_text = "\n\n---\n\n".join([doc.page_content for doc, _score in results])
     prompt_template = ChatPromptTemplate.from_template(PROMPT_TEMPLATE)

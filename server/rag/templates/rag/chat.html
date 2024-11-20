@@ -56,6 +56,14 @@
         <div id="chat-response" class="response" style="display: none;"></div>
         <div id="chat-sources" class="response" style="display: none;"></div>
 
+        <h2>Document Management</h2>
+        <div id="documents-section">
+            <button onclick="fetchDocuments()">Refresh Documents</button>
+            <div id="documents-list" style="margin-top: 10px; padding: 10px; border: 1px solid #ccc;">
+                Loading documents...
+            </div>
+        </div>
+
         <h2>Upload File to RAG</h2>
         <form id="file-upload-form" enctype="multipart/form-data">
             <div class="form-group">
@@ -88,6 +96,9 @@
                 const chatResponse = document.getElementById('chat-response');
                 chatResponse.style.display = 'block';
                 chatResponse.textContent = data.response;
+                if (data.sources === '') {
+                    data.sources = 'Pas de sources trouvées.';
+                }
     
                 const chatSources = document.getElementById('chat-sources');
                 chatSources.style.display = 'block';
@@ -111,8 +122,62 @@
                 const fileUploadStatus = document.getElementById('file-upload-status');
                 fileUploadStatus.style.display = 'block';
                 fileUploadStatus.textContent = data.status;
+                fetchDocuments();
+                setTimeout(() => {
+                    fileUploadStatus.style.display = 'none';
+                }, 5000);
             });
+            
         });
+
+        function fetchDocuments() {
+            fetch('/list_documents/')
+                .then(response => response.json())
+                .then(data => {
+                    const documentsList = document.getElementById('documents-list');
+                    documentsList.innerHTML = ''; // Clear existing list
+    
+                    if (data.documents.length === 0) {
+                        documentsList.textContent = 'No documents found.';
+                    } else {
+                        data.documents.forEach(doc => {
+                            const docDiv = document.createElement('div');
+                            docDiv.textContent = `Document: ${doc}`;
+    
+                            const deleteButton = document.createElement('button');
+                            deleteButton.textContent = 'Delete';
+                            deleteButton.style.marginLeft = '10px';
+                            deleteButton.onclick = function() {
+                                deleteDocument(doc);
+                            };
+    
+                            docDiv.appendChild(deleteButton);
+                            documentsList.appendChild(docDiv);
+                        });
+                    }
+                });
+        }
+    
+        // Supprimer un document
+        function deleteDocument(docId) {
+            fetch('/delete_document/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': '{{ csrf_token }}'
+                },
+                body: new URLSearchParams({
+                    'doc_id': docId
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                alert(data.status);
+                fetchDocuments();
+            });
+        }
+    
+        window.onload = fetchDocuments;
     </script>
 </body>
 </html>
