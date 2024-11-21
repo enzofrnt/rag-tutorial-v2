@@ -1,10 +1,10 @@
 <mxfile host="65bd71144e">
     <diagram id="Yj_4PcI-ndSMpdkM6dbf" name="Page-1">
-        <mxGraphModel dx="875" dy="512" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+        <mxGraphModel dx="875" dy="438" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
             <root>
                 <mxCell id="0"/>
                 <mxCell id="1" parent="0"/>
-                <mxCell id="2" value="Split text into smaller chunks" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
+                <mxCell id="2" value="Découper le text en petit morceau" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
                     <mxGeometry x="310" y="160" width="120" height="60" as="geometry"/>
                 </mxCell>
                 <mxCell id="4" value="Documents sources&lt;br&gt;(PDF)" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="1">
@@ -36,12 +36,12 @@
                         <mxPoint x="430" y="310" as="targetPoint"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="17" value="Prompt" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="14">
+                <mxCell id="17" value="Prompt utilisateur" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="14">
                     <mxGeometry x="0.0213" y="-2" relative="1" as="geometry">
                         <mxPoint as="offset"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="13" value="User" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" vertex="1" parent="1">
+                <mxCell id="13" value="Utilisateur" style="shape=umlActor;verticalLabelPosition=bottom;verticalAlign=top;html=1;outlineConnect=0;" vertex="1" parent="1">
                     <mxGeometry x="175" y="300" width="30" height="60" as="geometry"/>
                 </mxCell>
                 <mxCell id="15" value="LLM Model" style="shape=hexagon;perimeter=hexagonPerimeter2;whiteSpace=wrap;html=1;fixedSize=1;" vertex="1" parent="1">
@@ -53,7 +53,7 @@
                         <mxPoint x="609.33" y="490" as="targetPoint"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="18" value="Prompt + Similitude" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="16">
+                <mxCell id="18" value="Prompt utilisateur&amp;nbsp;+ Similitude" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="16">
                     <mxGeometry x="-0.0905" y="1" relative="1" as="geometry">
                         <mxPoint as="offset"/>
                     </mxGeometry>
@@ -64,7 +64,7 @@
                         <mxPoint x="210" y="340" as="targetPoint"/>
                     </mxGeometry>
                 </mxCell>
-                <mxCell id="20" value="Answer" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="19">
+                <mxCell id="20" value="Réponse" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="19">
                     <mxGeometry x="-0.0905" y="1" relative="1" as="geometry">
                         <mxPoint as="offset"/>
                     </mxGeometry>
@@ -108,8 +108,35 @@
                 <mxCell id="34" value="&lt;font style=&quot;font-size: 11px;&quot;&gt;Légende&lt;/font&gt;" style="rounded=0;whiteSpace=wrap;html=1;align=center;" vertex="1" parent="36">
                     <mxGeometry width="60" height="20" as="geometry"/>
                 </mxCell>
-                <mxCell id="37" value="&lt;span style=&quot;font-size: 12px;&quot;&gt;ChromaDB&lt;/span&gt;" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=15;fontSize=11;" vertex="1" parent="1">
+                <mxCell id="37" value="" style="shape=cylinder3;whiteSpace=wrap;html=1;boundedLbl=1;backgroundOutline=1;size=9.846163236177858;fontSize=11;" vertex="1" parent="1">
                     <mxGeometry x="520" y="280" width="60" height="80" as="geometry"/>
+                </mxCell>
+                <mxCell id="42" value="" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fillColor=none;dashed=1;" vertex="1" parent="1">
+                    <mxGeometry x="515" y="440" width="70" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="43" value="" style="endArrow=none;dashed=1;html=1;fontSize=11;exitX=1;exitY=0;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="42" target="44">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="650" y="450" as="sourcePoint"/>
+                        <mxPoint x="630" y="430" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="44" value="Tokennisation" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;dashed=1;fontSize=11;" vertex="1" parent="1">
+                    <mxGeometry x="620" y="420" width="80" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="45" value="" style="ellipse;whiteSpace=wrap;html=1;fontSize=11;fillColor=none;dashed=1;rotation=40;" vertex="1" parent="1">
+                    <mxGeometry x="475.37" y="328.97" width="110" height="41.17" as="geometry"/>
+                </mxCell>
+                <mxCell id="46" value="ChromaDB" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;dashed=1;fontSize=11;" vertex="1" parent="1">
+                    <mxGeometry x="574" y="310" width="80" height="30" as="geometry"/>
+                </mxCell>
+                <mxCell id="47" value="" style="endArrow=none;dashed=1;html=1;fontSize=11;exitX=0.958;exitY=0.278;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="1" source="45" target="48">
+                    <mxGeometry width="50" height="50" relative="1" as="geometry">
+                        <mxPoint x="584.9327351478184" y="454.47284515981005" as="sourcePoint"/>
+                        <mxPoint x="640" y="370" as="targetPoint"/>
+                    </mxGeometry>
+                </mxCell>
+                <mxCell id="48" value="Similarité Cosinus" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;dashed=1;fontSize=11;" vertex="1" parent="1">
+                    <mxGeometry x="620" y="350" width="100" height="30" as="geometry"/>
                 </mxCell>
             </root>
         </mxGraphModel>
