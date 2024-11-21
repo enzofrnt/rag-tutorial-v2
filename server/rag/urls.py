@@ -1,5 +1,6 @@
-from django.urls import path
+from django.urls import include, path
 from django.views.generic import RedirectView
+from django_eventstream import urls
 
 from . import views
 
@@ -9,4 +10,9 @@ urlpatterns = [
     path("add_file/", views.add_file, name="add_file"),
     path("list_documents/", views.list_documents, name="list_documents"),
     path("delete_document/", views.delete_document, name="delete_document"),
+    path(
+        "events/",
+        include(urls),
+        {"channels": ["chat"]},
+    ),
 ]

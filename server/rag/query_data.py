@@ -2,7 +2,6 @@ import argparse
 import subprocess
 
 from django.conf import settings
-from langchain.callbacks.manager import CallbackManagerForLLMRun
 from langchain.prompts import ChatPromptTemplate
 from langchain_chroma import Chroma
 from langchain_ollama import OllamaLLM
@@ -34,41 +33,34 @@ def main():
 
 
 def query_rag(query_text: str):
-    # Prepare the DB.
+    # Préparer la base de données
     embedding_function = get_embedding_function()
     db = Chroma(
         persist_directory=settings.CHROMA_PATH, embedding_function=embedding_function
     )
+    num_documents = len(db.get()["documents"])
 
-    total_elements = len(db.get()["documents"])
+    if num_documents == 0:
+        # Gérer le cas où la base de données est vide
+        message = "Désolé, la base de connaissances est vide. Veuillez ajouter des documents avant de poser une question."
+        # Retourner un générateur qui yield le message d'erreur
+        return iter([message]), []
 
-    k = min(5, total_elements)
-
-    # Search the DB.
+    k = min(5, num_documents)
     results = db.similarity_search_with_score(query_text, k=k)
 
-    context_text = "\n\n---\n\n".join([doc.page_content for doc, _score in results])
+    # Générer le contexte à partir des documents similaires
+    context_text = "\n\n---\n\n".join([doc.page_content for doc, _ in results])
     prompt_template = ChatPromptTemplate.from_template(PROMPT_TEMPLATE)
     prompt = prompt_template.format(context=context_text, question=query_text)
-    # print(prompt)
 
-    try:
-        model_name = settings.LANGUAGE_MODEL_NAME
-        model = OllamaLLM(model=model_name)
-        response_text = model.invoke(prompt)
-    except ResponseError as e:
-        if f"model '{model_name}' not found" in str(e):
-            print(f"Model '{model_name}' not found. Pulling the model...")
-            subprocess.run(["ollama", "pull", model_name], check=True)
-            model = OllamaLLM(model=model_name)
-            response_text = model.invoke(prompt)
-        else:
-            raise e
+    model_name = settings.LANGUAGE_MODEL_NAME
+    model = OllamaLLM(model=model_name)
 
-    sources = [doc.metadata.get("id", None) for doc, _score in results]
-    formatted_response = f"Response: {response_text}\nSources: {sources}"
-    print(formatted_response)
-    return response_text, sources
+    # Retourner un générateur qui stream la réponse
+    response_generator = model.stream(prompt)
+    sources = [doc.metadata.get("id", "") for doc, _ in results]
+    return response_generator, sources
 
 
 if __name__ == "__main__":

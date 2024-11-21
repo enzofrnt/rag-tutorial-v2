@@ -37,8 +37,10 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
+    "daphne",
     "django.contrib.staticfiles",
     "django_browser_reload",
+    "django_eventstream",
     "rag",
 ]
 
@@ -73,6 +75,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "server.wsgi.application"
 
+ASGI_APPLICATION = "server.asgi.application"
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases

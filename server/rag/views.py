@@ -2,11 +2,15 @@ import os
 import re
 
 from django.conf import settings
-from django.http import JsonResponse
+from django.http import JsonResponse, StreamingHttpResponse
 from django.shortcuts import render
 from django.utils.text import slugify
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_GET, require_POST
+from django_eventstream import send_event
+from langchain_chroma import Chroma
 
+from .get_embedding_function import get_embedding_function
 from .populate_database import add_to_chroma, load_documents, split_documents
 from .query_data import query_rag
 
@@ -15,43 +19,44 @@ from .query_data import query_rag
 def chat(request):
     if request.method == "POST":
         query_text = request.POST.get("query")
-        response_text, sources = query_rag(query_text)
-
+        response_generator, sources = query_rag(query_text)
         formatted_sources_text = clean_ids(sources)
 
-        return JsonResponse(
-            {"response": response_text, "sources": formatted_sources_text}
-        )
+        # Utiliser un canal unique par session
+        channel_name = f"chat"
+
+        for chunk in response_generator:
+            send_event(channel_name, "message", {"text": chunk})
+
+        return JsonResponse({"sources": formatted_sources_text})
     return render(request, "rag/chat.html")
 
 
 @csrf_exempt
 def add_file(request):
-    if request.method == "POST" and request.FILES["file"]:
-        uploaded_file = request.FILES["file"]
+    if request.method == "POST" and request.FILES:
+        uploaded_files = request.FILES.getlist("files")
+        print(uploaded_files)
+        for uploaded_file in uploaded_files:
+            print(uploaded_file)
+            filename = slugify(os.path.splitext(uploaded_file.name)[0])
+            extension = os.path.splitext(uploaded_file.name)[1]
+            sanitized_filename = f"{filename}{extension}"
 
-        filename = slugify(os.path.splitext(uploaded_file.name)[0])
-        extension = os.path.splitext(uploaded_file.name)[1]
-        sanitized_filename = f"{filename}{extension}"
-
-        os.makedirs(settings.DATA_PATH, exist_ok=True)
-        file_path = os.path.join(settings.DATA_PATH, sanitized_filename)
-        with open(file_path, "wb") as f:
-            for chunk in uploaded_file.chunks():
-                f.write(chunk)
+            os.makedirs(settings.DATA_PATH, exist_ok=True)
+            file_path = os.path.join(settings.DATA_PATH, sanitized_filename)
+            with open(file_path, "wb") as f:
+                for chunk in uploaded_file.chunks():
+                    f.write(chunk)
 
         documents = load_documents()
-        chunks = split_documents(documents)
-        add_to_chroma(chunks)
-        return JsonResponse({"status": "File added successfully"})
-    return render(request, "rag/chat.html")
-
-
-from django.http import JsonResponse
-from django.views.decorators.http import require_GET, require_POST
-from langchain_chroma import Chroma
-
-from .get_embedding_function import get_embedding_function
+        print(f"Number of documents loaded: {len(documents)}")
+        if documents:
+            chunks = split_documents(documents)
+            add_to_chroma(chunks)
+            return JsonResponse({"status": "Files added successfully"})
+        else:
+            return JsonResponse({"status": "No documents to add"})
 
 
 @csrf_exempt

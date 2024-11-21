@@ -2,7 +2,7 @@
 
 ## Prérequis
 
-- Python 3.9
+- Python 3.10
 - Ollama installé et disponible
 
 ## Installation
@@ -11,7 +11,7 @@
 
 2. Créez un environnement virtuel et activez-le :
     ```bash
-    python3.9 -m venv env
+    python3.10 -m venv env
     source env/bin/activate
     ```
 
