@@ -136,3 +136,13 @@ EMBEDDING_MODEL_NAME = "nomic-embed-text"
 CHROMA_PATH = str(BASE_DIR / "chroma_db")
 
 DATA_PATH = os.path.join(BASE_DIR, "data")
+
+PROMPT_TEMPLATE = """
+Answer the question based only on the following context:
+
+{context}
+
+---
+
+Answer the question based on the above context: {question}
+"""
