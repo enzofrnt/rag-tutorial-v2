@@ -6,5 +6,8 @@ class RagConfig(AppConfig):
     name = 'rag'
 
     def ready(self):
+        """
+        Chargement des documents dans la base de données au démarrage de l'application.
+        """
         from .populate_database import populate_database
         populate_database()

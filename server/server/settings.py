@@ -129,14 +129,20 @@ STATIC_URL = "static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-LANGUAGE_MODEL_NAME = "llama3.1"
+# Model utilisé pour les réponses de l'API
+LANGUAGE_MODEL_NAME = "llama3.2"
 
+# Modèle utilisé pour les embeddings
 EMBEDDING_MODEL_NAME = "nomic-embed-text"
 
+# Chemin vers la base de données Chroma
 CHROMA_PATH = str(BASE_DIR / "chroma_db")
 
+# Chemin vers les documents à ajouter à la base de données
 DATA_PATH = os.path.join(BASE_DIR, "data")
 
+# Modèle de pre-prompts pour les questions, le contexte correpond aux documents similaires trouvés
+# et la question est la question posée par l'utilisateur
 PROMPT_TEMPLATE = """
 Answer the question based only on the following context:
 

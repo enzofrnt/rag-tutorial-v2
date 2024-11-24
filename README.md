@@ -55,7 +55,7 @@ Sur ce repository, vous trouverez le code source de l'application de tutoriel de
 
 1. Se déplacer dans le répertoire de tokenisation :
     ```bash
-    cd tokenization
+    cd tokenization-example
     ```
 
 2. Créez un environnement virtuel et activez-le :
@@ -75,3 +75,67 @@ Sur ce repository, vous trouverez le code source de l'application de tutoriel de
     ```bash
     python tokenisation_openai.py
     ```
+
+## Embeding 
+
+### Prérequis
+
+- Python 3.10
+- Ollama installé et disponible
+
+### Installation
+
+1. Se déplacer dans le répertoire d'embedding :
+    ```bash
+    cd embedding-example
+    ```
+
+2. Créez un environnement virtuel et activez-le :
+    ```bash
+    python3.10 -m venv env
+    source env/bin/activate
+    ```
+
+3. Installez les dépendances :
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+### Lancer l'application
+
+1. Lancez le script d'embedding :
+    ```bash
+    python embedding.py
+    ```
+
+## Similarité cosinus
+
+### Prérequis
+
+- Python 3.10
+
+### Installation
+
+1. Se déplacer dans le répertoire de similarité cosinus :
+    ```bash
+    cd sim-cos-example
+    ```
+
+2. Créez un environnement virtuel et activez-le :
+    ```bash
+    python3.10 -m venv env
+    source env/bin/activate
+    ```
+
+3. Installez les dépendances :
+    ```bash
+    pip install -r requirements.txt
+    ```
+
+### Lancer l'application
+
+1. Lancez le script de similarité cosinus :
+    ```bash
+    python sim-cos.py
+    ```
+
