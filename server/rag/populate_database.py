@@ -17,7 +17,8 @@ def populate_database():
     """
     documents = load_documents()
     chunks = split_documents(documents)
-    add_to_chroma(chunks)
+    # add_to_chroma(chunks)
+    add_to_django(chunks)
 
 
 def reset_database():
@@ -30,7 +31,7 @@ def reset_database():
 def load_documents():
     """
     Charge les documents PDF depuis un répertoire spécifié dans les paramètres Django.
-    
+
     :return: Liste de documents chargés.
     """
     document_loader = PyPDFDirectoryLoader(settings.DATA_PATH)
@@ -45,10 +46,10 @@ def split_documents(documents: list[Document]):
     :return: Liste de morceaux de texte segmentés.
     """
     text_splitter = RecursiveCharacterTextSplitter(
-        chunk_size=800,           # Taille maximale d'un morceau (en caractères).
-        chunk_overlap=80,         # Chevauchement entre les morceaux pour la continuité.
-        length_function=len,      # Fonction pour mesurer la longueur des morceaux.
-        is_separator_regex=False, # Indique que le séparateur n'est pas une expression régulière.
+        chunk_size=800,  # Taille maximale d'un morceau (en caractères).
+        chunk_overlap=80,  # Chevauchement entre les morceaux pour la continuité.
+        length_function=len,  # Fonction pour mesurer la longueur des morceaux.
+        is_separator_regex=False,  # Indique que le séparateur n'est pas une expression régulière.
     )
     return text_splitter.split_documents(documents)
 
@@ -75,7 +76,9 @@ def add_to_chroma(chunks: list[Document]):
     print(f"Nombre de documents existants dans la base : {len(existing_ids)}")
 
     # Ajouter uniquement les nouveaux documents
-    new_chunks = [chunk for chunk in chunks_with_ids if chunk.metadata["id"] not in existing_ids]
+    new_chunks = [
+        chunk for chunk in chunks_with_ids if chunk.metadata["id"] not in existing_ids
+    ]
 
     if new_chunks:
         print(f"👉 Ajout de nouveaux documents : {len(new_chunks)}")
@@ -83,6 +86,45 @@ def add_to_chroma(chunks: list[Document]):
         db.add_documents(new_chunks, ids=new_chunk_ids)
     else:
         print("✅ Aucun nouveau document à ajouter")
+
+
+from django.db.utils import IntegrityError
+
+from .models import Chunk
+
+
+def add_to_django(chunks: list[Document]):
+    """
+    Ajoute les morceaux de texte à la base de données Django.
+    Ignore les documents déjà présents.
+
+    :param chunks: Liste de morceaux de texte à ajouter.
+    """
+    embedding_function = get_embedding_function()
+
+    for chunk in chunks:
+        # Calculer l'embedding pour le contenu
+        embedding = embedding_function.embed_query(chunk.page_content)
+
+        # Extraire les métadonnées
+        source = chunk.metadata.get("source")
+        page = int(chunk.metadata.get("page", 0))
+        chunk_index = int(chunk.metadata.get("id", "0").split(":")[-1])
+
+        # Créer et sauvegarder l'objet dans la base
+        try:
+            Chunk.objects.create(
+                source=source,
+                page=page,
+                chunk_index=chunk_index,
+                content=chunk.page_content,
+                embedding=embedding,
+            )
+            print(f"✅ Chunk ajouté : {source} - Page {page}, Chunk {chunk_index}")
+        except IntegrityError:
+            print(
+                f"⛔ Chunk déjà existant : {source} - Page {page}, Chunk {chunk_index}"
+            )
 
 
 def calculate_chunk_ids(chunks):
@@ -96,8 +138,10 @@ def calculate_chunk_ids(chunks):
     current_chunk_index = 0
 
     for chunk in chunks:
-        source = chunk.metadata.get("source")  # Source du document (par exemple, le nom du fichier PDF).
-        page = chunk.metadata.get("page")     # Numéro de la page.
+        source = chunk.metadata.get(
+            "source"
+        )  # Source du document (par exemple, le nom du fichier PDF).
+        page = chunk.metadata.get("page")  # Numéro de la page.
         current_page_id = f"{source}:{page}"  # ID unique pour la page (source:page).
 
         # Incrémente l'index si le morceau appartient à la même page que le précédent.

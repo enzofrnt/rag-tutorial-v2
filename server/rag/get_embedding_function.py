@@ -1,9 +1,6 @@
 from django.conf import settings
 from langchain_ollama import OllamaEmbeddings
 
-# Récupération du nom du modèle à partir des paramètres Django
-model_name = settings.EMBEDDING_MODEL_NAME
-
 
 def get_embedding_function():
     """

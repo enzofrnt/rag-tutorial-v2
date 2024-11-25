@@ -1,14 +1,15 @@
 import ollama
 
 # Pormpt de base pour l'exemple
-prompt = "J'adore manger du fromage à raclette."
+prompt = "J'adore manger du fromage à raclette. zlfnnzekfnzepfznfnznfepfznfqsdqddsdqsdqsddqdsdsqdds"
 
 # Récupère les embeddings pour le prompt
 embeddings = ollama.embeddings(
-  model='nomic-embed-text',
-  prompt=prompt,
+    model="nomic-embed-text",
+    prompt=prompt,
 )
 
 # Affichage du résultat de l'embedding pour le prompt
 print(f"Embeddings for '{prompt}':")
 print(embeddings.embedding)
+print(len(embeddings.embedding))
