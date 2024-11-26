@@ -50,60 +50,50 @@ def chat(request):
     return render(request, "rag/chat.html")  # Charge la page HTML pour le chat
 
 
+from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+
+from .models import Document
+from .populate_database import add_to_django, load_documents_from_files, split_documents
+
+
 @csrf_exempt
 def add_file(request):
     """
-    Vue permettant d'ajouter des fichiers au système, de les traiter et de les insérer dans la base de données.
+    Vue pour ajouter des fichiers via un modèle Django.
     """
     if request.method == "POST" and request.FILES:
-        uploaded_files = request.FILES.getlist(
-            "files"
-        )  # Récupère les fichiers téléchargés
+        uploaded_files = request.FILES.getlist("files")
         for uploaded_file in uploaded_files:
-            # Crée un nom de fichier sécurisé
-            filename = slugify(os.path.splitext(uploaded_file.name)[0])
-            extension = os.path.splitext(uploaded_file.name)[1]
-            sanitized_filename = f"{filename}{extension}"
+            # Créez une instance du modèle Document pour chaque fichier
+            document = Document.objects.create(file=uploaded_file)
+            document.save()
+            print(f"✅ Fichier '{document.file.name}' sauvegardé.")
 
-            # Sauvegarde le fichier dans le dossier spécifié
-            os.makedirs(settings.DATA_PATH, exist_ok=True)
-            file_path = os.path.join(settings.DATA_PATH, sanitized_filename)
-            with open(file_path, "wb") as f:
-                for chunk in uploaded_file.chunks():
-                    f.write(chunk)
-
-        # Charge les documents, les segmente en morceaux et les ajoute à la base Chroma
-        documents = load_documents()
+        # Traitez les documents pour l'indexation
+        documents = load_documents_from_files()
         if documents:
             chunks = split_documents(documents)
-            # add_to_chroma(chunks)
             add_to_django(chunks)
-
-            return JsonResponse({"status": "Files added successfully"})
+            return JsonResponse({"status": "Fichiers ajoutés avec succès"})
         else:
-            return JsonResponse({"status": "No documents to add"})
+            return JsonResponse({"status": "Aucun document à ajouter"})
+    return JsonResponse({"error": "Aucun fichier envoyé"}, status=400)
 
 
 @csrf_exempt
 @require_GET
 def list_documents(request):
     """
-    Vue permettant de lister tous les documents présents dans la base de données et de les charger s'ils ne le sont pas.
+    Vue permettant de lister tous les documents présents dans la base de données.
     """
-    populate_database()  # Charger les documents pour être sûr de tous les avoir
-
-    db = Chroma(
-        persist_directory=settings.CHROMA_PATH,
-        embedding_function=get_embedding_function(),
-    )
-
-    # Récupère les documents enregistrés et nettoie leurs identifiants
-    documents = db.get(include=["documents"])["ids"]
-    cleaned_id = clean_ids(documents)
-    return JsonResponse({"documents": list(cleaned_id)})
+    documents = Document.objects.all()
+    document_names = [doc.file.name for doc in documents]
+    return JsonResponse({"documents": document_names})
 
 
 from django.http import JsonResponse
+
 from .models import Chunk
 
 
@@ -126,15 +116,11 @@ def delete_document(request):
     """
     Vue permettant de supprimer un document spécifique en fonction de son identifiant.
     """
-    doc_id = request.POST.get("doc_id")  # Récupère l'ID du document à supprimer
+    doc_id = request.POST.get("doc_id")  # Le nom du fichier à supprimer
     if not doc_id:
         return JsonResponse({"error": "ID du document manquant"}, status=400)
 
-    # delete_file_references(doc_id)  # Supprime les références associées dans la base
-    delete_file_references_postgres(
-        doc_id
-    )  # Supprime les références associées dans la base
-    delete_file(doc_id)  # Supprime le fichier du système de fichiers
+    delete_file_references(doc_id)
     return JsonResponse({"status": "Document supprimé avec succès"})
 
 
@@ -161,34 +147,23 @@ def delete_file_references_postgres(file_name: str):
 
 def delete_file_references(file_name: str):
     """
-    Supprime toutes les références liées à un fichier dans la base de données Chroma.
-    :param file_name: Nom du fichier à rechercher dans les métadonnées (e.g., "mon_fichier.pdf").
+    Supprime toutes les références liées à un fichier dans la base PostgreSQL
+    et supprime le fichier via le modèle Document.
     """
-    # Charger la base de données
-    db = Chroma(
-        persist_directory=settings.CHROMA_PATH,
-        embedding_function=get_embedding_function(),
-    )
-    existing_items = db.get(
-        include=["metadatas"]
-    )  # Récupère les métadonnées existantes
-    ids_to_delete = []
+    # Supprimer les chunks associés
+    chunks_to_delete = Chunk.objects.filter(source=file_name)
+    count_chunks = chunks_to_delete.count()
+    chunks_to_delete.delete()
 
-    # Recherche des références associées au fichier
-    for doc_id, metadata in zip(existing_items["ids"], existing_items["metadatas"]):
-        source = metadata.get("source", "")
-        if file_name in source:
-            ids_to_delete.append(doc_id)
-
-    # Supprime les documents identifiés
-    if ids_to_delete:
-        print(
-            f"🔍 {len(ids_to_delete)} documents trouvés pour '{file_name}'. Suppression..."
-        )
-        db.delete(ids=ids_to_delete)
-        print("✅ Documents supprimés avec succès.")
+    # Supprimer le document
+    document = Document.objects.filter(file__endswith=file_name).first()
+    if document:
+        document.delete()
+        print(f"✅ Document '{file_name}' supprimé.")
     else:
-        print(f"🚫 Aucune référence trouvée pour '{file_name}'.")
+        print(f"🚫 Document '{file_name}' introuvable dans la base.")
+
+    print(f"✅ {count_chunks} références supprimées pour '{file_name}'.")
 
 
 def delete_file(file_name: str):

@@ -168,3 +168,26 @@ def clear_database():
     """
     if os.path.exists(settings.CHROMA_PATH):
         shutil.rmtree(settings.CHROMA_PATH)
+
+
+from langchain_community.document_loaders import PyPDFLoader
+
+from .models import Document
+
+
+def load_documents_from_files():
+    """
+    Charge les documents à partir des fichiers enregistrés via le modèle Document.
+    """
+    documents = []
+    # Récupérer tous les documents
+    for doc in Document.objects.all():
+        file_path = doc.file.path
+        # Charger le document
+        loader = PyPDFLoader(file_path)
+        doc_pages = loader.load()
+        # Ajouter la source dans les métadonnées
+        for page in doc_pages:
+            page.metadata["source"] = doc.file.name
+        documents.extend(doc_pages)
+    return documents

@@ -16,21 +16,34 @@ from pgvector.django import IvfflatIndex, VectorField
 
 
 class Chunk(models.Model):
-    source = models.CharField(max_length=255)
+    document = models.ForeignKey(
+        Document, on_delete=models.CASCADE, related_name="chunks"
+    )
     page = models.IntegerField()
     chunk_index = models.IntegerField()
     content = models.TextField()
-    embedding = VectorField(dimensions=768)  # Taille de l'embedding
+    embedding = VectorField(dimensions=768)
 
     class Meta:
         indexes = [
             IvfflatIndex(
                 name="embedding_cosine_idx",
                 fields=["embedding"],
-                lists=100,  # Nombre de clusters
-                opclasses=["vector_cosine_ops"],  # Utilisation de la distance cosinus
+                lists=100,
+                opclasses=["vector_cosine_ops"],
             ),
         ]
 
     def __str__(self):
-        return f"{self.source} - Page {self.page}, Chunk {self.chunk_index}"
+        return f"{self.document.file.name} - Page {self.page}, Chunk {self.chunk_index}"
+
+
+from django.db import models
+
+
+class Document(models.Model):
+    file = models.FileField(upload_to="documents/")
+    uploaded_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.file.name
