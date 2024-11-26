@@ -9,6 +9,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_GET, require_POST
 from django_eventstream import send_event
 from langchain_chroma import Chroma
+from langchain_community.document_loaders import PyPDFLoader
 
 from .get_embedding_function import get_embedding_function
 from .populate_database import (
@@ -59,9 +60,6 @@ from .populate_database import add_to_django, load_documents_from_files, split_d
 
 @csrf_exempt
 def add_file(request):
-    """
-    Vue pour ajouter des fichiers via un modèle Django.
-    """
     if request.method == "POST" and request.FILES:
         uploaded_files = request.FILES.getlist("files")
         for uploaded_file in uploaded_files:
@@ -70,14 +68,13 @@ def add_file(request):
             document.save()
             print(f"✅ Fichier '{document.file.name}' sauvegardé.")
 
-        # Traitez les documents pour l'indexation
-        documents = load_documents_from_files()
-        if documents:
-            chunks = split_documents(documents)
-            add_to_django(chunks)
-            return JsonResponse({"status": "Fichiers ajoutés avec succès"})
-        else:
-            return JsonResponse({"status": "Aucun document à ajouter"})
+            # Charger et traiter le document
+            loader = PyPDFLoader(document.file.path)
+            pages = loader.load()
+            chunks = split_documents(pages)
+            add_to_django(chunks, document)
+
+        return JsonResponse({"status": "Fichiers ajoutés avec succès"})
     return JsonResponse({"error": "Aucun fichier envoyé"}, status=400)
 
 
@@ -100,28 +97,27 @@ from .models import Chunk
 @csrf_exempt
 @require_GET
 def list_documents_postgres(request):
-    """
-    Vue permettant de lister tous les documents présents dans la base PostgreSQL.
-    """
-    # Récupérer les fichiers uniques présents dans la base
-    documents = Chunk.objects.values_list("source", flat=True).distinct()
-
-    # Retourner les fichiers en réponse JSON
-    return JsonResponse({"documents": list(documents)})
+    documents = Document.objects.all()
+    document_list = [{"id": doc.id, "name": str(doc)} for doc in documents]
+    return JsonResponse({"documents": document_list})
 
 
 @csrf_exempt
 @require_POST
 def delete_document(request):
-    """
-    Vue permettant de supprimer un document spécifique en fonction de son identifiant.
-    """
-    doc_id = request.POST.get("doc_id")  # Le nom du fichier à supprimer
+    doc_id = request.POST.get("doc_id")
     if not doc_id:
         return JsonResponse({"error": "ID du document manquant"}, status=400)
 
-    delete_file_references(doc_id)
-    return JsonResponse({"status": "Document supprimé avec succès"})
+    try:
+        document = Document.objects.get(pk=doc_id)
+        document.delete()
+        print(
+            f"✅ Document '{document.file.name}' et ses chunks associés ont été supprimés."
+        )
+        return JsonResponse({"status": "Document supprimé avec succès"})
+    except Document.DoesNotExist:
+        return JsonResponse({"error": "Document introuvable"}, status=404)
 
 
 from .models import Chunk

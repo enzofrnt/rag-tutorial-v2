@@ -9,3 +9,5 @@ data/
 db.sqlite3
 env/
 venv/
+*.log
+docments/

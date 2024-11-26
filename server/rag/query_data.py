@@ -122,6 +122,8 @@ def query_rag_with_postgres(query_text: str):
     # Streamer la réponse et collecter les sources
     response_generator = model.stream(prompt)
     sources = [
-        f"{chunk.source}:{chunk.page}:{chunk.chunk_index}" for chunk in similar_chunks
+        f"{chunk.document.file.name}: Page {chunk.page}, Chunk {chunk.chunk_index}"
+        for chunk in similar_chunks
     ]
+
     return response_generator, sources

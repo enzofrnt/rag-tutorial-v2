@@ -203,25 +203,30 @@
                 .then(data => {
                     const documentsList = document.getElementById('documents-list');
                     documentsList.innerHTML = ''; // Vider la liste existante
-
+        
                     if (data.documents.length === 0) {
                         documentsList.textContent = 'Aucun document trouvé.';
                     } else {
                         data.documents.forEach(doc => {
                             const docDiv = document.createElement('div');
-                            docDiv.textContent = `Document : ${doc}`;
-
+                            docDiv.textContent = `Document : ${doc.name}`;
+        
                             const deleteButton = document.createElement('button');
                             deleteButton.textContent = 'Supprimer';
                             deleteButton.style.marginLeft = '10px';
                             deleteButton.onclick = function() {
-                                deleteDocument(doc);
+                                deleteDocument(doc.id);
                             };
-
+        
                             docDiv.appendChild(deleteButton);
                             documentsList.appendChild(docDiv);
                         });
                     }
+                })
+                .catch(error => {
+                    console.error('Erreur lors de la récupération des documents :', error);
+                    const documentsList = document.getElementById('documents-list');
+                    documentsList.textContent = 'Erreur lors de la récupération des documents.';
                 });
         }
     
@@ -239,8 +244,15 @@
             })
             .then(response => response.json())
             .then(data => {
-                alert(data.status);
-                fetchDocuments();
+                if (data.status) {
+                    alert(data.status);
+                    fetchDocuments();
+                } else {
+                    alert(data.error);
+                }
+            })
+            .catch(error => {
+                console.error('Erreur lors de la suppression du document :', error);
             });
         }
     

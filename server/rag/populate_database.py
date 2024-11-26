@@ -93,38 +93,30 @@ from django.db.utils import IntegrityError
 from .models import Chunk
 
 
-def add_to_django(chunks: list[Document]):
+def add_to_django(chunks: list[Document], document: Document):
     """
-    Ajoute les morceaux de texte à la base de données Django.
-    Ignore les documents déjà présents.
+    Ajoute les chunks à la base de données en les associant au document fourni.
 
-    :param chunks: Liste de morceaux de texte à ajouter.
+    :param chunks: Liste des chunks à ajouter.
+    :param document: Instance du Document auquel les chunks sont associés.
     """
     embedding_function = get_embedding_function()
-
     for chunk in chunks:
         # Calculer l'embedding pour le contenu
         embedding = embedding_function.embed_query(chunk.page_content)
 
         # Extraire les métadonnées
-        source = chunk.metadata.get("source")
         page = int(chunk.metadata.get("page", 0))
         chunk_index = int(chunk.metadata.get("id", "0").split(":")[-1])
 
         # Créer et sauvegarder l'objet dans la base
-        try:
-            Chunk.objects.create(
-                source=source,
-                page=page,
-                chunk_index=chunk_index,
-                content=chunk.page_content,
-                embedding=embedding,
-            )
-            print(f"✅ Chunk ajouté : {source} - Page {page}, Chunk {chunk_index}")
-        except IntegrityError:
-            print(
-                f"⛔ Chunk déjà existant : {source} - Page {page}, Chunk {chunk_index}"
-            )
+        Chunk.objects.create(
+            document=document,
+            page=page,
+            chunk_index=chunk_index,
+            content=chunk.page_content,
+            embedding=embedding,
+        )
 
 
 def calculate_chunk_ids(chunks):
