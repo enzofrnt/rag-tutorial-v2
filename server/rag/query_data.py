@@ -33,15 +33,21 @@ def query_rag(query_text: str):
 
     # Limiter le nombre de documents retournés pour la recherche par similarité
     k = min(5, num_documents)
-    results = db.similarity_search_with_score(query_text, k=k)  # Recherche des documents les plus proches
+    results = db.similarity_search_with_score(
+        query_text, k=k
+    )  # Recherche des documents les plus proches
 
     # Générer le contexte à partir des documents similaires
     context_text = "\n\n---\n\n".join([doc.page_content for doc, _ in results])
-    prompt_template = ChatPromptTemplate.from_template(settings.PROMPT_TEMPLATE)  # Charger le modèle de prompt
-    prompt = prompt_template.format(context=context_text, question=query_text)  # Insérer le contexte et la question dans le prompt
-    
+    prompt_template = ChatPromptTemplate.from_template(
+        settings.PROMPT_TEMPLATE
+    )  # Charger le modèle de prompt
+    prompt = prompt_template.format(
+        context=context_text, question=query_text
+    )  # Insérer le contexte et la question dans le prompt
+
     # Afficher le prompt
-    # print(f"Prompt:\n{prompt}")
+    print(f"Prompt:\n{prompt}")
 
     # Charger le modèle de langage configuré
     model_name = settings.LANGUAGE_MODEL_NAME
@@ -49,5 +55,7 @@ def query_rag(query_text: str):
 
     # Retourner un générateur qui stream la réponse
     response_generator = model.stream(prompt)
-    sources = [doc.metadata.get("id", "") for doc, _ in results]  # Extraire les identifiants des documents sources
+    sources = [
+        doc.metadata.get("id", "") for doc, _ in results
+    ]  # Extraire les identifiants des documents sources
     return response_generator, sources
